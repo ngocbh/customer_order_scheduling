@@ -61,9 +61,12 @@ public:
 				s[i][j] = org.s[i][j], sp[j] += s[i][j];
 
 		// read d
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++) {
+			int temp_max_obj1 = 0;
 			for (int j = 0; j < p; j++)
-				d[i][j] = org.d[i][j], max_obj1 += d[i][j];
+				d[i][j] = org.d[i][j], temp_max_obj1 += d[i][j];
+			max_obj1 = max(max_obj1,temp_max_obj1);
+		}
 
 		// read c
 		for (int i = 0; i < m; i++) 
@@ -104,9 +107,12 @@ public:
 				inp >> s[i][j], sp[j] += s[i][j];
 
 		// read d
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++) {
+			int temp_max_obj1 = 0;
 			for (int j = 0; j < p; j++)
-				inp >> d[i][j], max_obj1 += d[i][j];
+				inp >> d[i][j], temp_max_obj1 += d[i][j];
+			max_obj1 = max(max_obj1,temp_max_obj1);
+		}
 
 		// read c
 		for (int i = 0; i < m; i++) 
@@ -169,9 +175,9 @@ public:
 		for (int i = 0; i < ins.p; i++) 
 			linear(*this, slack.slice(i, ins.p, ins.n) , IRT_LQ, ins.sp[i]);
 		
+		branch(*this, obj1, INT_VAL_MIN());
 		branch(*this, slack, INT_VAL_MIN());
 		branch(*this, load, INT_VAL_MIN());
-        branch(*this, obj1, INT_VAL_MIN());
         branch(*this, obj2, INT_VAL_MIN());
 
 		cout << "initalized"<<  endl;
