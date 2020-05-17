@@ -2,7 +2,7 @@
 
 ## Approaches
 
-### Brute-force :x:
+### Brute-force :white_check_mark:
 
 ### Brach and Bound :interrobang:
 
