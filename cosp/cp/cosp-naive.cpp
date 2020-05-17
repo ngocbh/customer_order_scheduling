@@ -156,7 +156,7 @@ public:
 
 		for (int i = 0; i < ins.n; i++)
 			for (int j = 0; j < ins.p; j++)
-				rel(*this, slack[i*ins.p+j] == (ins.d[i][j] - sum(load.slice(ins.id(0,i,j), ins.p*ins.n, ins.m)) ));
+				rel(*this, slack[i*ins.p+j] == (ins.d[i][j] - sum(load.slice(ins.id(0,j,i), ins.p*ins.n, ins.m)) ));
 
 		for (int i = 0; i < ins.m; i++)
 			for (int j = 0; j < ins.p; j++) 
