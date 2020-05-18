@@ -1,5 +1,11 @@
 # customer_order_scheduling
 
+## Dependencies
+```
+Gecode
+OpenCBLS
+```
+
 ## Approaches
 
 ### Brute-force :white_check_mark:
