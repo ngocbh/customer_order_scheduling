@@ -1,7 +1,9 @@
-Dòng đầu chứa 3 số nguyên lần lượt là N, P, M
+## Data Description
 
-Trong M dòng tiếp theo, dòng m (1 <= m <= M), cột p (1 <= p <= P) là giá trị của S(m,p) 
+## The first line contains 3 integers, respectively, N, P, M
 
-Trong N dòng tiếp theo, dòng n (1 <= n <= N), cột p (1 <= p <= P) là giá trị của D(n,p) 
+## In the next M lines, the line m (1 <= m <= M), contains p integers (1 <= p <= P) representing the value of S(m, p)
 
-Trong m * P dòng tiếp theo, dòng (m-1) * P + p (1 <= m <= M, 1 <= p <= P), cột n (1 <= n <= N) là giá trị của c(m,p,n)
+## In the next N lines, the line n (1 <= n <= N), contains p integers (1 <= p <= P) representing the value of D(n, p)
+
+## In the next m * P lines, the line (m-1) * P + p (1 <= m <= M, 1 <= p <= P), contains n integers (1 <= n <= N) representing the value of c(m, p, n)
