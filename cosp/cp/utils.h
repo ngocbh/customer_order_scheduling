@@ -4,6 +4,7 @@
 #include <gecode/int.hh>
 #include <gecode/minimodel.hh>
 #include <gecode/search.hh>
+#include <gecode/driver.hh>
 
 #include <stdio.h>
 #include <iostream>
@@ -17,7 +18,7 @@ using namespace Gecode;
 using namespace std;
 
 // parameters
-string INPUT_FILE="./data/cos_12_3_1";
+string INPUT_FILE="./data/cos_50_5_2";
 string OUTPUT_FILE="";
 bool INTERMEDIATE = false;
 

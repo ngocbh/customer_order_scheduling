@@ -1,0 +1,8 @@
+Summary
+	runtime: 		1.902165 (1902.17ms)
+	solutions: 		30
+	failures: 		311607
+	nodes: 			623273
+	restarts: 		0
+	no-goods: 		0
+	peek-depth:		28

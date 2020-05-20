@@ -26,13 +26,23 @@ def run_naive(filename, input_dir, output_dir):
 	(stdout, stderr) = process.communicate()
 	print(stdout)
 	
+def run_greedy(filename, input_dir, output_dir):
+	input_path = join(input_dir, filename)
+	output_path = join(output_dir, 'greedy/{}'.format(filename))
+	process = Popen(['g++', '-std=c++11', '-F/Library/Frameworks', 
+		'-framework', 'gecode', '-o', './cosp/cp/cosp_greedy.exe', './cosp/cp/cosp_greedy.cpp'], stdout=PIPE, universal_newlines=True)
+	(stdout, stderr) = process.communicate()
+	process = Popen(['./cosp/cp/cosp_greedy.exe', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
+	(stdout, stderr) = process.communicate()
+	print(stdout)
 
 
 def run():
 	for filename in listdir(DATA_FOLDER):
 		if filename[0] == '.':
 			continue
-		run_naive(filename, DATA_FOLDER, RESULT_FORDER)
+		# run_naive(filename, DATA_FOLDER, RESULT_FORDER)
+		run_greedy(filename, DATA_FOLDER, RESULT_FORDER)
 		# break
 
 if __name__ == '__main__':
