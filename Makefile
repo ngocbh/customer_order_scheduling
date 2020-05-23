@@ -20,9 +20,9 @@ cp: $(CP)
 
 mip: $(MIP)
 
-$(CP) : ./src/cp/cosp_cp_naive.cpp ./src/cp/cosp_cp_greedy.cpp ./src/cp/cosp_cp_branching.cpp  ./src/cp/*.h
+$(CP) : ./src/cp/cosp_cp_naive.cpp ./src/cp/cosp_cp_greedy.cpp ./src/cp/cosp_cp_branching.cpp ./src/cp/*.h ./src/model/*.h
 
-$(MIP) : ./src/mip/cosp_mip_naive.cpp ./src/mip/cosp_mip_greedy.cpp ./src/mip/*.h
+$(MIP) : ./src/mip/cosp_mip_naive.cpp ./src/mip/cosp_mip_greedy.cpp ./src/model/*.h
 
 
 bin/cosp_mip%:bin/cosp_mip%.o

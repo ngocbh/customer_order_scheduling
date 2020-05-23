@@ -1,8 +1,15 @@
 #ifndef __COSP_H__
 #define __COSP_H__
 
-#include "utils.h"
-#include "cosp_instance.h"
+#include "../model/utils.h"
+#include "../model/cosp_instance.h"
+
+#include <gecode/int.hh>
+#include <gecode/minimodel.hh>
+#include <gecode/search.hh>
+#include <gecode/driver.hh>
+
+using namespace Gecode;
 
 class COSP: public Space {
 private:

@@ -4,8 +4,8 @@
  *  Created by ngocjr7 on [2020-05-16 16:01]	
 */
 
-#include "utils.h"
-#include "cosp_instance.h"
+#include "../model/utils.h"
+#include "../model/cosp_instance.h"
 #include "cosp.h"
 
 void print_stat(ostream& out, Search::Statistics stat, microseconds duration, int num_solutions) {
@@ -23,7 +23,14 @@ int main(int argc, char* argv[]) {
 	parseCommandFlags(argc, argv);
 
 	COSPInstance ins;
-	ins.read_from_file(INPUT_FILE);
+	if ( INPUT_FILE != "" ) {
+		ifstream inp(INPUT_FILE);
+		ins.parse_from_stream(inp);
+	} else {
+		cout << "No file passing, read from stdin\n"; 
+		ins.parse_from_stream(cin);
+	}
+
        
 	SizeOptions opt("COSP");
 	opt.model(COSP::MODEL_GREEDY);
@@ -37,7 +44,7 @@ int main(int argc, char* argv[]) {
 	COSP* prob = new COSP(ins, opt);
 
 	Search::Options o;
-	// o.stop = Search::Stop::time(20000);
+	o.stop = Search::Stop::time(20000);
 
 	BAB<COSP> e(prob, o);
 	delete prob;

@@ -5,19 +5,20 @@
 */
 
 #include "ortools/linear_solver/linear_solver.h"
-#include "utils.h"
-#include "cosp_instance.h"
+#include "../model/utils.h"
+#include "../model/cosp_instance.h"
 
 using namespace std;
 typedef pair<int,int> ii;
 
 namespace operations_research {
 
-string run(const COSPInstance prob) {
+string run(const COSPInstance prob, stringstream& stat) {
 	stringstream ret;
 	// Create the linear solver with the GLOP backend.
 	MPSolver solver("sportscheduling",
                 MPSolver::CBC_MIXED_INTEGER_PROGRAMMING);
+	solver.set_time_limit(50000); // 50s
 
 	// Create variables
 	vector<vector<vector<MPVariable*> >  > load;
@@ -72,7 +73,7 @@ string run(const COSPInstance prob) {
 
 	// [START objective]
 	// Minimize sum_{i,j,k,t} f[i][j][k][t] * d[j][k];
-	long long alpha = 1000, beta = 1;
+	long long alpha = 10000000, beta = 1;
 	MPObjective* const objective = solver.MutableObjective();
 	objective->SetCoefficient(obj1, alpha);
 	objective->SetCoefficient(obj2, beta);
@@ -83,7 +84,8 @@ string run(const COSPInstance prob) {
 	const MPSolver::ResultStatus result_status = solver.Solve();
 	// Check that the problem has an optimal solution.
 	if (result_status != MPSolver::OPTIMAL) {
-		LOG(FATAL) << "The problem does not have an optimal solution!";
+		stat << "The problem does not have an optimal solution!";
+		return to_string(prob.obj1) + " -1";
 	}
 	// [END solve]
 
@@ -95,22 +97,42 @@ string run(const COSPInstance prob) {
 			ret << endl;
 		}
  
-	LOG(INFO) << "\nAdvanced usage:";
-	LOG(INFO) << "Problem solved in " << solver.wall_time() << " milliseconds";
-	LOG(INFO) << "Problem solved in " << solver.iterations() << " iterations";
-	LOG(INFO) << "Problem solved in " << solver.nodes() << " branch-and-bound nodes";
+	stat << "\nAdvanced usage:";
+	stat << "Problem solved in " << solver.wall_time() << " milliseconds\n";
+	stat << "Problem solved in " << solver.iterations() << " iterations\n";
+	stat << "Problem solved in " << solver.nodes() << " branch-and-bound nodes\n";
 	return ret.str();  
 }
     
 }
-int main() 
+int main(int argc, char* argv[]) 
 {
-  
+	parseCommandFlags(argc, argv);
 	COSPInstance prob;
-	prob.read_from_file("./examples/mycpp/cos_12_3_1");
-	
-	cout << operations_research::run(prob);
-	return EXIT_SUCCESS;
+	if ( INPUT_FILE != "" ) {
+		ifstream inp(INPUT_FILE);
+		cout << INPUT_FILE << endl;
+		prob.parse_from_stream(inp);
+	} else {
+		cout << "No file passing, read from stdin\n"; 
+		prob.parse_from_stream(cin);
+	}
 
-	return 0;
+
+	stringstream stat;
+	string results = operations_research::run(prob, stat);
+	if (OUTPUT_FILE != "") {
+		ofstream fout(OUTPUT_FILE);
+		fout << results;
+		fout.close();
+
+		ofstream fout_stat(OUTPUT_FILE + "_stat");
+		fout_stat << stat.str();
+		fout_stat.close();
+	}
+
+	cout << results << endl;
+	cout << stat.str() << endl;
+
+	return EXIT_SUCCESS;
 }

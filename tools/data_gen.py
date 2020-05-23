@@ -7,14 +7,14 @@ import random as rd
 # M*N*P = 100
 # M*N*P = 500
 # M*N*P = 1000
-N = 2
-P = 5
-M = 2
-max_variable_values = [20, 50, 100, 1000]
+N = 23
+P = 153
+M = 65
+max_variable_values = [20 , 30, 50, 500]
 samples = [1]
 for max_variable_value in max_variable_values:
 	for sample in samples:
-		f = open('./cos_data/cos_{}_{}'.\
+		f = open('./data/cos_{}_{}'.\
 			# format(N*P*M, max_variable_value, sample), 'a')
 			format(N*P*M, max_variable_value), 'a')
 
