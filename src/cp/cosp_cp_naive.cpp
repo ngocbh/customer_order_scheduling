@@ -21,21 +21,20 @@ void print_stat(ostream& out, Search::Statistics stat, microseconds duration, in
 
 int main(int argc, char* argv[]) {
 	parseCommandFlags(argc, argv);
-
+	cout << 1 << endl;    
 	COSPInstance ins;
 	ins.read_from_file(INPUT_FILE);
 
 	SizeOptions opt("COSP");
-	opt.model(COSP::MODEL_GREEDY);
+	opt.model(COSP::MODEL_NAIVE);
 	opt.model(COSP::MODEL_NAIVE, "naive");
 	opt.model(COSP::MODEL_GREEDY, "greedy");
-	opt.branching(COSP::BRANCH_OBJ1);
+	opt.branching(COSP::BRANCH_NAIVE);
 	opt.branching(COSP::BRANCH_NAIVE, "naive");
 	opt.branching(COSP::BRANCH_OBJ1, "obj1");
 	opt.parse(argc, argv);
 
 	COSP* prob = new COSP(ins, opt);
-
 	Search::Options o;
 	o.stop = Search::Stop::time(20000);
 
@@ -46,7 +45,7 @@ int main(int argc, char* argv[]) {
 	auto start = high_resolution_clock::now(); 
 	COSP* solution;
 	while (COSP* s = e.next()) {
-		if (INTERMEDIATE) {
+		if (INTERMEDIATE) { 
 			cout << "Start ---- " << endl;
 			s->print(cout);
 			cout << "End ----" << endl;

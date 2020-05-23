@@ -87,15 +87,15 @@ public:
 	        branch(*this, obj2, INT_VAL_MIN());
 	        break;
 	    case BRANCH_OBJ1:
-	    	branch(*this, obj1, INT_VAL_MIN());
-	    	branch(*this, slack, INT_VAL_MAX());
-	    	branch(*this, load, INT_VAL_MIN());
+	    	branch(*this, obj1,  INT_VAL_MIN());
+	    	branch(*this, slack, INT_VAR_AFC_SIZE_MAX(opt.decay()),  INT_VAL_MAX());
+	    	branch(*this, load, INT_VAR_AFC_SIZE_MAX(opt.decay()), INT_VAL_MAX());
 	        branch(*this, obj2, INT_VAL_MIN());
 	        break;
 	    }
 	}
 
-	COSP(COSP& s): ins(s.ins), Space(s) {
+	COSP(COSP& s): Space(s), ins(s.ins) {
 		this->load.update(*this, s.load);
 		this->slack.update(*this, s.slack);
 		this->obj1.update(*this, s.obj1);

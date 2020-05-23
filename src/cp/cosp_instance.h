@@ -38,20 +38,23 @@ public:
 		for (int i = 0; i < n; i++) 
 			for (int j = 0; j < p; j++)
 				d[i][j] = org.d[i][j];
-
+		
 		for (int i = 0; i < m; i++) 
 			for (int j = 0; j < p; j++)
 				for (int k = 0; k < n; k++) {
 					c[i][j][k] = flatten_c[id(i,j,k)] = org.c[i][j][k];
 					max_load[i][j][k] = org.max_load[i][j][k];
 				}
+
+		obj1 = org.obj1;
+		for (int k = 0; k < n; k++)
+			slack_n[k] = org.slack_n[k];
 	}
 
 	void read_from_file(string filename) {
 		ifstream inp(filename);
 		inp >> n >> p >> m;
-
-		allocate(m,p,n);
+		allocate(m,p,n);	
 
 		// read s and compute bound
 		for (int i = 0; i < m; i++)
@@ -82,24 +85,41 @@ public:
 		s = new int*[m];
 		for (int i = 0; i < m; i++) {
 			s[i] = new int[p];
+			for (int j = 0; j < p; j++) 
+				s[i][j] = 0;
 		}
 
 		d = new int*[n];
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++) {
 			d[i] = new int[p];
+			for (int j = 0; j < p; j++)
+				d[i][j] = 0;
+		}
 
 		c = new int**[m], load = new int**[m], max_load = new int**[m];
 		for (int i = 0; i < m; i++) {
 			c[i] = new int*[p], load[i] = new int*[p], max_load[i] = new int*[p];
-			for (int j = 0; j < p; j++)
+			for (int j = 0; j < p; j++) {
 				c[i][j] = new int[n], load[i][j] = new int[n], max_load[i][j] = new int[n];
+				for (int k = 0; k < n; k++)
+					c[i][j][k] = load[i][j][k] = max_load[i][j][k] = 0;
+			}
 		}
 
 		flatten_c = new int[m*p*n];
+		memset(flatten_c, 0,m*p*n*sizeof(int));
+
 		sp = new int[p];
+		memset(sp, 0, p*sizeof(int));
+
 		dp = new int[p];
+		memset(dp, 0, p*sizeof(int));
+
 		dn = new int[n];
+		memset(dn, 0, n*sizeof(int));
+
 		slack_n = new int[n];
+		memset(slack_n, 0, n*sizeof(int));
 	}
 
 	int id(int i, int j,int k) const {
@@ -141,27 +161,28 @@ public:
 				// if we still have enough goods, then no thing to worry about
 				if ( slack_n[i] == obj1 ) 
 					continue;
-
+					
 				// otherwise, we try to switch goods with customers [0...i-1]
 				for (int j = 0; j < p; j++) 
 					// if customer i still need product j
 					if (allocated_d[i][j] < d[i][j]) {
 						// try to exchange product i to others
 						for (int jj = 0; jj < p; jj++) 
-							if (sp[jj] == 0) // find another product that we still have 
+							if (remaining_sp[jj] != 0 ) // find another product that we still have 
 								for (int ii = 0; ii < i; ii++) 
-									if ( allocated_d[ii][jj] > 0 &&  // and exchanged customer was supplied that product
-									  d[ii][j]-allocated_d[ii][j] > 0 ) {// and they still need our product j
+									if ( allocated_d[ii][j] > 0 &&  // and exchanged customer was supplied that product
+									  d[ii][jj]-allocated_d[ii][jj] > 0) {// and they still need our product j
 										// exchange it
-										int exchanged_unit = min(sp[jj], d[i][j] - allocated_d[i][j]);
+										int exchanged_unit = min(remaining_sp[jj], d[i][j] - allocated_d[i][j]);
 										exchanged_unit = min(exchanged_unit, 
-											min(allocated_d[ii][jj], d[ii][j]-allocated_d[ii][j]));
+											min(allocated_d[ii][j], d[ii][jj]-allocated_d[ii][jj]));
 										exchanged_unit = min(exchanged_unit, slack_n[i] - obj1);
 
+										
 										remaining_sp[jj] -= exchanged_unit;
-										allocated_d[ii][jj] -= exchanged_unit;
+										allocated_d[ii][j] -= exchanged_unit;
 										allocated_d[i][j] += exchanged_unit;
-										allocated_d[ii][j] += exchanged_unit;
+										allocated_d[ii][jj] += exchanged_unit;
 										slack_n[i] -= exchanged_unit;
 									}
 					}

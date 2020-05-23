@@ -18,7 +18,7 @@ using namespace Gecode;
 using namespace std;
 
 // parameters
-string INPUT_FILE="./data/cos_50_5_2";
+string INPUT_FILE="./data/cos_12_3_1";
 string OUTPUT_FILE="";
 bool INTERMEDIATE = false;
 
@@ -47,7 +47,7 @@ void parseCommandFlags(int argc, char* argv[])
 string format_duration(microseconds ms ) {
     using namespace std::chrono;
     auto secs = duration_cast<seconds>(ms);
-    ms -= duration_cast<microseconds>(secs);
+    // ms -= duration_cast<microseconds>(secs);
     auto mins = duration_cast<minutes>(secs);
     secs -= duration_cast<seconds>(mins);
     auto hour = duration_cast<hours>(mins);
@@ -58,9 +58,7 @@ string format_duration(microseconds ms ) {
         ss << hour.count() << ":";
     if (mins.count() != 0)
         ss << mins.count() << ":" ;
-    if (secs.count() != 0) 
-        ss << secs.count() << "." ;
-    ss << float(ms.count());
+    ss << float(ms.count())/10e5;
     return ss.str();
 }
 
