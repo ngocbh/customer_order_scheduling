@@ -11,35 +11,47 @@ GECODE_LIBS = -F/Library/Frameworks -framework gecode
 
 CP = ./bin/cosp_cp_naive ./bin/cosp_cp_greedy ./bin/cosp_cp_branching
 MIP = ./bin/cosp_mip_naive ./bin/cosp_mip_greedy
+LS = ./bin/cosp_ls
 
 .PHONY: clean all
 
-all: bin cp mip
+all: bin cp mip ls
 
 cp: $(CP)
 
 mip: $(MIP)
 
+ls: $(LS)
+
 $(CP) : ./src/cp/cosp_cp_naive.cpp ./src/cp/cosp_cp_greedy.cpp ./src/cp/cosp_cp_branching.cpp ./src/cp/*.h ./src/model/*.h
 
 $(MIP) : ./src/mip/cosp_mip_naive.cpp ./src/mip/cosp_mip_greedy.cpp ./src/model/*.h
 
+$(LS) : ./src/ls/cosp_ls.cpp ./src/ls/*.h ./src/model/*.h
 
-bin/cosp_mip%:bin/cosp_mip%.o
+bin/cosp_mip% : bin/cosp_mip%.o 
 	@echo "Compling $@"
 	$(CXX) $(ORTOOLS_CFLAGS) $(LDFLAGS) $(ORTOOLS_LIBS) $< -o $@ 
 
-bin/cosp_cp%:bin/cosp_cp%.o
+bin/cosp_cp% : bin/cosp_cp%.o
 	@echo "Compling $@"
 	$(CXX) $(CFLAGS) $(LDFLAGS) $(GECODE_LIBS) $< -o $@ 
 
-bin/%.o : src/mip/%.cpp
+bin/cosp_ls : bin/cosp_ls.o
+	@echo "Compling $@"
+	$(CXX) $(CFLAGS) $(LDFLAGS) $< -o $@ 
+
+bin/%.o : src/mip/%.cpp ./src/model/*.h
 	@echo "Compling $@"
 	$(CXX) $(ORTOOLS_CFLAGS) $(ORTOOLS_LIBS) $(LDFLAGS) -c $< -o $@
 
-bin/%.o : src/cp/%.cpp
+bin/%.o : src/cp/%.cpp ./src/model/*.h ./src/cp/*.h
 	@echo "Compling cp $@"
 	$(CXX) $(CFLAGS) $(GECODE_LIBS) $(LDFLAGS) -c $< -o $@
+
+bin/%.o : src/ls/%.cpp ./src/model/*.h
+	@echo "Compling ls $@"
+	$(CXX) $(CFLAGS) $(LDFLAGS) -c $< -o $@
 
 bin:
 	mkdir -p bin

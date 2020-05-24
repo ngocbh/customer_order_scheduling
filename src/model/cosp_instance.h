@@ -1,3 +1,9 @@
+/*
+ *  Problem : cosp_instance.h
+ *  Description : 
+ *  Created by ngocjr7 on [2020-05-24 10:41]	
+*/
+
 #ifndef __COSP_INSTANCE_H__
 #define __COSP_INSTANCE_H__
 
@@ -19,6 +25,7 @@ public:
 	long long obj1, obj2;
 	long long max_obj1; // $max_obj1 = max_i^n sum_j^p d[i][j]$
 	long long max_obj2; // $max_obj2 = sum_{i,j,k} c[i][j][k]*max_load[i][j][k]
+	int** allocated_d;
 
 	COSPInstance() {}
 
@@ -34,17 +41,18 @@ public:
 
 		for (int i = 0; i < n; i++) 
 			for (int j = 0; j < p; j++) {
-				d[i][j] = org.d[i][j];
+				d[i][j] = org.d[i][j], allocated_d[i][j] = org.allocated_d[i][j];
 			}
 		
 		for (int i = 0; i < m; i++) 
 			for (int j = 0; j < p; j++)
 				for (int k = 0; k < n; k++) {
 					c[i][j][k] = flatten_c[id(i,j,k)] = org.c[i][j][k];
+					load[i][j][k] = org.load[i][j][k];
 					max_load[i][j][k] = org.max_load[i][j][k];
 				}
 
-		obj1 = org.obj1, obj2 = org.obj2;
+		obj1 = org.obj1, obj2 = org.obj2; 
 
 		max_obj1 = org.max_obj1, max_obj2 = org.max_obj2;
 		for (int i = 0; i < p; i++) sp[i] = org.sp[i], dp[i] = org.dp[i];
@@ -54,7 +62,6 @@ public:
 	void parse_from_stream(istream& inp) {
 		inp >> n >> p >> m;
 		allocate(m,p,n);	
-
 		// read s and compute bound
 		for (int i = 0; i < m; i++)
 			for (int j = 0; j < p; j++) {
@@ -117,6 +124,13 @@ public:
 			}
 		}
 
+		allocated_d = new int*[n];
+		for (int i = 0; i < n; i++) {
+			allocated_d[i] = new int[p];
+			for (int j = 0; j < p; j++) 
+				allocated_d[i][j] = 0;
+		}
+
 		flatten_c = new int[m*p*n];
 		memset(flatten_c, 0,m*p*n*sizeof(int));
 
@@ -142,12 +156,9 @@ public:
 		// allocating temporary array
 		bool ret = true;
 		int* remaining_sp = new int[p];
-		int** allocated_d = new int*[n];
-		for (int i = 0; i < n; i++) {
-			allocated_d[i] = new int[p];
+		for (int i = 0; i < n; i++) 
 			for (int j = 0; j < p; j++) 
 				allocated_d[i][j] = 0;
-		}
 
 		// initialization
 		for (int i = 0; i < p; i++) remaining_sp[i] = sp[i];
@@ -203,10 +214,6 @@ public:
 					ret = false;
 			}
 		}
-		// delete temporary array
-		for (int i = 0; i < n; i++) 
-			delete[] allocated_d[i];
-		delete[] allocated_d;
 		delete[] remaining_sp;
 		return ret;
 	}

@@ -71,9 +71,11 @@ string run(const COSPInstance prob, stringstream& stat) {
 	// [END objective]
 
 	// [START solve]
-	const MPSolver::ResultStatus result_status = solver.Solve();
+	MPSolverParameters params;
+	// params.SetIntegerParam(MPSolverParameters::LP_ALGORITHM, MPSolverParameters::DUAL);
+	const MPSolver::ResultStatus result_status = solver.Solve(params);
 	// Check that the problem has an optimal solution.
-	if (result_status != MPSolver::OPTIMAL) {
+	if (result_status != MPSolver::OPTIMAL and result_status != MPSolver::FEASIBLE ) {
 		stat << "The problem does not have an optimal solution!";
 		return to_string(prob.obj1) + " -1";
 	}
@@ -88,6 +90,8 @@ string run(const COSPInstance prob, stringstream& stat) {
 		}
  
 	stat << "\nAdvanced usage:";
+	if (result_status == MPSolver::FEASIBLE )
+		stat << "Problem has been stopped by timmer\n";
 	stat << "Problem solved in " << solver.wall_time() << " milliseconds\n";
 	stat << "Problem solved in " << solver.iterations() << " iterations\n";
 	stat << "Problem solved in " << solver.nodes() << " branch-and-bound nodes\n";
