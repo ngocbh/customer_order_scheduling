@@ -1,0 +1,8 @@
+Summary
+	runtime: 		0.156107 (156.107ms)
+	solutions: 		13
+	failures: 		21047
+	nodes: 			42119
+	restarts: 		0
+	no-goods: 		0
+	peek-depth:		20

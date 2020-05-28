@@ -1,0 +1,9 @@
+Model has been stopped by timmer, result wasn't proven
+Summary
+	runtime: 		19.8778 (19877.8ms)
+	solutions: 		0
+	failures: 		0
+	nodes: 			1027
+	restarts: 		0
+	no-goods: 		0
+	peek-depth:		1027

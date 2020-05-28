@@ -12,8 +12,15 @@ namespace local_search {
 
 struct Assignment {
 	int i, j, k, val;
+
+	Assignment() {}
+
 	Assignment(int _i, int _j, int _k, int _value): 
 		i(_i), j(_j), k(_k), val(_value) {}
+
+	bool operator <(const Assignment& b) const {
+		return this->val < b.val;
+	}
 };
 
 typedef vector<Assignment> Move;
@@ -51,6 +58,10 @@ public:
 		generate_greedy_solution();
 	}
 
+	int id(int i, int j,int k) const {
+		return i*p*n + j*n + k;
+	}
+
 	void generate_greedy_solution() {
 		int **rs = new int*[m];
 		for (int i = 0; i < m; i++) {
@@ -59,14 +70,25 @@ public:
 				rs[i][j] = prob.s[i][j];
 		}
 
-		for (int k = 0; k < n; k++) 
-			for (int j = 0; j < p; j++) {
-				for (int i = 0; i < m; i++) {
-					load[i][j][k] = min(tad[k][j], rs[i][j]);
-					tad[k][j] -= load[i][j][k];
-					rs[i][j] -= load[i][j][k];
+		vector<Assignment> flatten_c;
+		flatten_c.resize(n*m*p);
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < p; j++)
+				for (int k = 0; k < n; k++) {
+					flatten_c[id(i,j,k)].i = i;
+					flatten_c[id(i,j,k)].j = j;
+					flatten_c[id(i,j,k)].k = k;
+					flatten_c[id(i,j,k)].val = prob.c[i][j][k];
 				}
-			}
+
+		sort(flatten_c.begin(),flatten_c.end());
+		for (auto e: flatten_c) {
+
+			load[e.i][e.j][e.k] = min(tad[e.k][e.j], rs[e.i][e.j]);
+			tad[e.k][e.j] -= load[e.i][e.j][e.k];
+			rs[e.i][e.j] -= load[e.i][e.j][e.k];
+		}
+
 		total_cost = get_cost();
 	}
 
@@ -112,11 +134,11 @@ vector<Move> explore_neighbors(COSPSolution& sol) {
 }
 
 void run(const COSPInstance& prob) {
-	
 
 	int iter = 0, max_iter = 1000;
 
 	COSPSolution sol(prob);
+	sol.print();
 	while ( iter++ < max_iter ) {
 		explore_neighbors(sol);
 		break;

@@ -12,10 +12,11 @@ GECODE_LIBS = -F/Library/Frameworks -framework gecode
 CP = ./bin/cosp_cp_naive ./bin/cosp_cp_greedy ./bin/cosp_cp_branching
 MIP = ./bin/cosp_mip_naive ./bin/cosp_mip_greedy
 LS = ./bin/cosp_ls
+GREEDY = ./bin/cosp_greedy
 
 .PHONY: clean all
 
-all: bin cp mip ls
+all: bin cp mip ls greedy
 
 cp: $(CP)
 
@@ -23,11 +24,15 @@ mip: $(MIP)
 
 ls: $(LS)
 
+greedy: $(GREEDY)
+
 $(CP) : ./src/cp/cosp_cp_naive.cpp ./src/cp/cosp_cp_greedy.cpp ./src/cp/cosp_cp_branching.cpp ./src/cp/*.h ./src/model/*.h
 
 $(MIP) : ./src/mip/cosp_mip_naive.cpp ./src/mip/cosp_mip_greedy.cpp ./src/model/*.h
 
 $(LS) : ./src/ls/cosp_ls.cpp ./src/ls/*.h ./src/model/*.h
+
+$(GREEDY): ./src/greedy/cosp_greedy.cpp ./src/model/*.h
 
 bin/cosp_mip% : bin/cosp_mip%.o 
 	@echo "Compling $@"
@@ -41,6 +46,10 @@ bin/cosp_ls : bin/cosp_ls.o
 	@echo "Compling $@"
 	$(CXX) $(CFLAGS) $(LDFLAGS) $< -o $@ 
 
+bin/cosp_greedy : bin/cosp_greedy.o
+	echo "Compling $@"
+	$(CXX) $(CFLAGS) $(LDFLAGS) $< -o $@ 
+
 bin/%.o : src/mip/%.cpp ./src/model/*.h
 	@echo "Compling $@"
 	$(CXX) $(ORTOOLS_CFLAGS) $(ORTOOLS_LIBS) $(LDFLAGS) -c $< -o $@
@@ -50,6 +59,10 @@ bin/%.o : src/cp/%.cpp ./src/model/*.h ./src/cp/*.h
 	$(CXX) $(CFLAGS) $(GECODE_LIBS) $(LDFLAGS) -c $< -o $@
 
 bin/%.o : src/ls/%.cpp ./src/model/*.h
+	@echo "Compling ls $@"
+	$(CXX) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+
+bin/%.o : src/greedy/%.cpp ./src/model/*.h
 	@echo "Compling ls $@"
 	$(CXX) $(CFLAGS) $(LDFLAGS) -c $< -o $@
 

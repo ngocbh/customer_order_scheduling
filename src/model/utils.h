@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <unordered_set>
 #include <queue>
+#include <cstring>
+#include <algorithm>
 
 using namespace std;
 using namespace std::chrono; 

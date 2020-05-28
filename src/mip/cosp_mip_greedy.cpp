@@ -105,14 +105,11 @@ int main(int argc, char* argv[])
 	COSPInstance prob;
 	if ( INPUT_FILE != "" ) {
 		ifstream inp(INPUT_FILE);
-		cout << INPUT_FILE << endl;
 		prob.parse_from_stream(inp);
 	} else {
 		cout << "No file passing, read from stdin\n"; 
 		prob.parse_from_stream(cin);
 	}
-
-	
 
 	stringstream stat;
 	string results = operations_research::run(prob, stat);
