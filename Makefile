@@ -44,7 +44,7 @@ bin/cosp_cp% : bin/cosp_cp%.o
 
 bin/cosp_ls : bin/cosp_ls.o
 	@echo "Compling $@"
-	$(CXX) $(CFLAGS) $(LDFLAGS) $< -o $@ 
+	$(CXX) $(CFLAGS) $< -o $@ 
 
 bin/cosp_greedy : bin/cosp_greedy.o
 	echo "Compling $@"

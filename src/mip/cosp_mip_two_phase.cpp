@@ -178,7 +178,6 @@ int main(int argc, char* argv[])
 	long long objective1 = operations_research::minimize_maximum_slack(prob);
 
 	// phase 2: minimize cost
-	stringstream stat;	
 
 	string results;
 	if (objective1 == -1) 
@@ -190,6 +189,7 @@ int main(int argc, char* argv[])
 	auto stop = high_resolution_clock::now(); 
     auto duration = duration_cast<microseconds>(stop - start);
 
+    stringstream stat;	
     stat << "\truntime: \t\t" << format_duration(duration) << " (" << float(duration.count())/1000 << "ms)" << endl;
 	// save results
 	if (OUTPUT_FILE != "") {
