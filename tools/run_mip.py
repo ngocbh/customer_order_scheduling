@@ -18,14 +18,24 @@ from utils import create_dir
 DATA_FOLDER='./data'
 RESULT_FORDER='./results/mip'
 
-def run_naive(filename, input_dir, output_dir):
+def run_weighted_sum(filename, input_dir, output_dir):
 	input_path = join(input_dir, filename)
-	output_path = join(output_dir, 'naive/{}'.format(filename))
+	output_path = join(output_dir, 'weighted_sum/{}'.format(filename))
 	create_dir(output_path)
 	print(filename)
-	process = Popen(['./bin/cosp_mip_naive', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
+	process = Popen(['./bin/cosp_mip_weighted_sum', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
 	(stdout, stderr) = process.communicate()
 	print(stdout)
+
+def run_two_phase(filename, input_dir, output_dir):
+	input_path = join(input_dir, filename)
+	output_path = join(output_dir, 'two_phase/{}'.format(filename))
+	create_dir(output_path)
+	print(filename)
+	process = Popen(['./bin/cosp_mip_two_phase', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
+	(stdout, stderr) = process.communicate()
+	print(stdout)
+
 	
 def run_greedy(filename, input_dir, output_dir):
 	input_path = join(input_dir, filename)
@@ -41,8 +51,9 @@ def run():
 	for filename in listdir(DATA_FOLDER):
 		if filename[0] == '.':
 			continue
-		run_naive(filename, DATA_FOLDER, RESULT_FORDER)
-		run_greedy(filename, DATA_FOLDER, RESULT_FORDER)
+		run_weighted_sum(filename, DATA_FOLDER, RESULT_FORDER)
+		run_two_phase(filename, DATA_FOLDER, RESULT_FORDER)
+		# run_greedy(filename, DATA_FOLDER, RESULT_FORDER)
 		# break
 
 if __name__ == '__main__':

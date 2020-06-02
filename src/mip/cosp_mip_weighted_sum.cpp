@@ -22,7 +22,8 @@ string run(const COSPInstance prob, stringstream& stat) {
 
 	// Create variables
 	vector<vector<vector<MPVariable*> >  > load;
- 
+	MPVariable *obj1, *obj2;
+
 	load.resize(prob.m);
 	for (int i = 0; i < prob.m; i++) {
 		load[i].resize(prob.p);
@@ -34,54 +35,61 @@ string run(const COSPInstance prob, stringstream& stat) {
 		}
 	}
 
+	obj1 = solver.MakeIntVar(0, prob.max_obj1, "objective1");
+	obj2 = solver.MakeIntVar(0, prob.max_obj2, "objective2");
+
 	const double infinity = solver.infinity();
 
 	// [START constraints]
 	for (int i = 0; i < prob.m; i++)
 		for (int j = 0; j < prob.p; j++) {
-			MPConstraint* c = solver.MakeRowConstraint(-infinity, 1LL*prob.s[i][j]);
+			MPConstraint* c = solver.MakeRowConstraint(-infinity, prob.s[i][j]);
 			for (int k = 0; k < prob.n; k++) 
 				c->SetCoefficient(load[i][j][k], 1);
 		}
 
 	for (int k = 0; k < prob.n; k++)
 		for (int j = 0; j < prob.p; j++) {
-			MPConstraint* c = solver.MakeRowConstraint(-infinity, 1LL*prob.d[k][j]);
+			MPConstraint* c = solver.MakeRowConstraint(-infinity, prob.d[k][j]);
 			for (int i = 0; i < prob.m; i++)
 				c->SetCoefficient(load[i][j][k], 1);
 		}
 
-	
 	for (int k = 0; k < prob.n; k++) {
-		MPConstraint* c = solver.MakeRowConstraint(1LL*(prob.dn[k] - prob.slack_n[k]), 1LL*(prob.dn[k] - prob.slack_n[k]));
+		MPConstraint* c = solver.MakeRowConstraint(prob.dn[k], infinity);
+		c->SetCoefficient(obj1, 1);
 		for (int i = 0; i < prob.m; i++)
-			for (int j = 0; j < prob.p; j++)
+			for (int j = 0; j < prob.p; j++) 
 				c->SetCoefficient(load[i][j][k], 1);
 	}	
-	
-	// [END constraints]
-	// [START objective]
-	// Minimize sum_{i,j,k,t} f[i][j][k][t] * d[j][k];
-	MPObjective* const objective = solver.MutableObjective();
+
+	MPConstraint* c = solver.MakeRowConstraint(-infinity, 0);
+	c->SetCoefficient(obj2, -1);
 	for (int i = 0; i < prob.m; i++)
 		for (int j = 0; j < prob.p; j++)
 			for (int k = 0; k < prob.n; k++) 
-				objective->SetCoefficient(load[i][j][k], prob.c[i][j][k]);
+				c->SetCoefficient(load[i][j][k], prob.c[i][j][k]);
+	// [END constraints]
+
+	// [START objective]
+	// Minimize sum_{i,j,k,t} f[i][j][k][t] * d[j][k];
+	long long alpha = 100000, beta = 1;
+	MPObjective* const objective = solver.MutableObjective();
+	objective->SetCoefficient(obj1, alpha);
+	objective->SetCoefficient(obj2, beta);
 	objective->SetMinimization();
 	// [END objective]
 
 	// [START solve]
-	MPSolverParameters params;
-	// params.SetIntegerParam(MPSolverParameters::LP_ALGORITHM, MPSolverParameters::DUAL);
-	const MPSolver::ResultStatus result_status = solver.Solve(params);
+	const MPSolver::ResultStatus result_status = solver.Solve();
 	// Check that the problem has an optimal solution.
-	if (result_status != MPSolver::OPTIMAL and result_status != MPSolver::FEASIBLE ) {
+	if (result_status != MPSolver::OPTIMAL) {
 		stat << "The problem does not have an optimal solution!";
 		return to_string(prob.obj1) + " -1";
 	}
 	// [END solve]
 
-	ret << prob.obj1 << " " << (long long)objective->Value() << endl;
+	ret << obj1->solution_value() << " " << (int)obj2->solution_value() << endl;
 	for (int i = 0; i < prob.m; i++)
 		for (int j = 0; j < prob.p; j++) {
 			for (int k = 0; k < prob.n; k++)
@@ -90,8 +98,6 @@ string run(const COSPInstance prob, stringstream& stat) {
 		}
  
 	stat << "\nAdvanced usage:";
-	if (result_status == MPSolver::FEASIBLE )
-		stat << "Problem has been stopped by timmer\n";
 	stat << "Problem solved in " << solver.wall_time() << " milliseconds\n";
 	stat << "Problem solved in " << solver.iterations() << " iterations\n";
 	stat << "Problem solved in " << solver.nodes() << " branch-and-bound nodes\n";

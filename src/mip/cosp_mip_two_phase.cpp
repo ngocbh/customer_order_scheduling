@@ -13,16 +13,15 @@ typedef pair<int,int> ii;
 
 namespace operations_research {
 
-string run(const COSPInstance prob, stringstream& stat) {
-	stringstream ret;
+int minimize_maximum_slack(const COSPInstance prob) {
 	// Create the linear solver with the GLOP backend.
-	MPSolver solver("sportscheduling",
+	MPSolver solver("cosp_1",
                 MPSolver::CBC_MIXED_INTEGER_PROGRAMMING);
 	solver.set_time_limit(50000); // 50s
 
 	// Create variables
 	vector<vector<vector<MPVariable*> >  > load;
-	MPVariable *obj1, *obj2;
+	MPVariable *obj1;
 
 	load.resize(prob.m);
 	for (int i = 0; i < prob.m; i++) {
@@ -36,7 +35,6 @@ string run(const COSPInstance prob, stringstream& stat) {
 	}
 
 	obj1 = solver.MakeIntVar(0, prob.max_obj1, "objective1");
-	obj2 = solver.MakeIntVar(0, prob.max_obj2, "objective2");
 
 	const double infinity = solver.infinity();
 
@@ -62,21 +60,12 @@ string run(const COSPInstance prob, stringstream& stat) {
 			for (int j = 0; j < prob.p; j++) 
 				c->SetCoefficient(load[i][j][k], 1);
 	}	
-
-	MPConstraint* c = solver.MakeRowConstraint(-infinity, 0);
-	c->SetCoefficient(obj2, -1);
-	for (int i = 0; i < prob.m; i++)
-		for (int j = 0; j < prob.p; j++)
-			for (int k = 0; k < prob.n; k++) 
-				c->SetCoefficient(load[i][j][k], prob.c[i][j][k]);
 	// [END constraints]
 
 	// [START objective]
 	// Minimize sum_{i,j,k,t} f[i][j][k][t] * d[j][k];
-	long long alpha = 10000000, beta = 1;
 	MPObjective* const objective = solver.MutableObjective();
-	objective->SetCoefficient(obj1, alpha);
-	objective->SetCoefficient(obj2, beta);
+	objective->SetCoefficient(obj1, 1);
 	objective->SetMinimization();
 	// [END objective]
 
@@ -84,23 +73,87 @@ string run(const COSPInstance prob, stringstream& stat) {
 	const MPSolver::ResultStatus result_status = solver.Solve();
 	// Check that the problem has an optimal solution.
 	if (result_status != MPSolver::OPTIMAL) {
-		stat << "The problem does not have an optimal solution!";
-		return to_string(prob.obj1) + " -1";
+		return -1;
 	}
 	// [END solve]
 
-	ret << obj1->solution_value() << " " << (int)obj2->solution_value() << endl;
+	return (long long)objective->Value();
+}
+
+string minimize_cost(const COSPInstance prob, long long objective1) {
+	stringstream ret;
+	// Create the linear solver with the GLOP backend.
+	MPSolver solver("cosp_2",
+                MPSolver::CBC_MIXED_INTEGER_PROGRAMMING);
+	solver.set_time_limit(50000); // 50s
+
+	// Create variables
+	vector<vector<vector<MPVariable*> >  > load;
+
+	load.resize(prob.m);
+	for (int i = 0; i < prob.m; i++) {
+		load[i].resize(prob.p);
+		for (int j = 0; j < prob.p; j++) {
+			load[i][j].resize(prob.n);
+			for (int k = 0; k < prob.n; k++) 
+				load[i][j][k] = solver.MakeIntVar(0, prob.max_load[i][j][k], 
+					"load|" + to_string(i) + "|" + to_string(j) + "|" + to_string(k));
+		}
+	}
+
+	const double infinity = solver.infinity();
+
+	// [START constraints]
+	for (int i = 0; i < prob.m; i++)
+		for (int j = 0; j < prob.p; j++) {
+			MPConstraint* c = solver.MakeRowConstraint(-infinity, prob.s[i][j]);
+			for (int k = 0; k < prob.n; k++) 
+				c->SetCoefficient(load[i][j][k], 1);
+		}
+
+	for (int k = 0; k < prob.n; k++)
+		for (int j = 0; j < prob.p; j++) {
+			MPConstraint* c = solver.MakeRowConstraint(-infinity, prob.d[k][j]);
+			for (int i = 0; i < prob.m; i++)
+				c->SetCoefficient(load[i][j][k], 1);
+		}
+
+	for (int k = 0; k < prob.n; k++) { 
+		long long slackn = min(prob.dn[k], objective1);
+		MPConstraint* c = solver.MakeRowConstraint(1LL*(prob.dn[k] - slackn), 1LL*(prob.dn[k] - slackn));
+		for (int i = 0; i < prob.m; i++)
+			for (int j = 0; j < prob.p; j++)
+				c->SetCoefficient(load[i][j][k], 1);
+	}	
+
+	// [END constraints]
+
+	// [START objective]
+	// Minimize sum_{i,j,k,t} f[i][j][k][t] * d[j][k];
+	MPObjective* const objective = solver.MutableObjective();
+	for (int i = 0; i < prob.m; i++)
+		for (int j = 0; j < prob.p; j++)
+			for (int k = 0; k < prob.n; k++) 
+				objective->SetCoefficient(load[i][j][k], prob.c[i][j][k]);
+	objective->SetMinimization();
+	// [END objective]
+
+	// [START solve]
+	const MPSolver::ResultStatus result_status = solver.Solve();
+	// Check that the problem has an optimal solution.
+	if (result_status != MPSolver::OPTIMAL) {
+		return to_string(objective1) + " -1";
+	}
+	// [END solve]
+
+	ret << objective1 << " " << (int)objective->Value() << endl;
 	for (int i = 0; i < prob.m; i++)
 		for (int j = 0; j < prob.p; j++) {
 			for (int k = 0; k < prob.n; k++)
 				ret << load[i][j][k]->solution_value() << " ";
 			ret << endl;
 		}
- 
-	stat << "\nAdvanced usage:";
-	stat << "Problem solved in " << solver.wall_time() << " milliseconds\n";
-	stat << "Problem solved in " << solver.iterations() << " iterations\n";
-	stat << "Problem solved in " << solver.nodes() << " branch-and-bound nodes\n";
+
 	return ret.str();  
 }
     
@@ -108,6 +161,10 @@ string run(const COSPInstance prob, stringstream& stat) {
 int main(int argc, char* argv[]) 
 {
 	parseCommandFlags(argc, argv);
+
+
+	auto start = high_resolution_clock::now(); 
+
 	COSPInstance prob;
 	if ( INPUT_FILE != "" ) {
 		ifstream inp(INPUT_FILE);
@@ -117,9 +174,24 @@ int main(int argc, char* argv[])
 		prob.parse_from_stream(cin);
 	}
 
+	// phase 1: minimize maximum slack
+	long long objective1 = operations_research::minimize_maximum_slack(prob);
 
-	stringstream stat;
-	string results = operations_research::run(prob, stat);
+	// phase 2: minimize cost
+	stringstream stat;	
+
+	string results;
+	if (objective1 == -1) 
+		results = "-1";
+	else {
+		results = operations_research::minimize_cost(prob, objective1);
+	}
+
+	auto stop = high_resolution_clock::now(); 
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    stat << "\truntime: \t\t" << format_duration(duration) << " (" << float(duration.count())/1000 << "ms)" << endl;
+	// save results
 	if (OUTPUT_FILE != "") {
 		ofstream fout(OUTPUT_FILE);
 		fout << results;
