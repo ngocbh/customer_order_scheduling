@@ -24,9 +24,9 @@ def run_ls(filename, input_dir, output_dir):
 	output_path = join(output_dir, 'greedy/{}'.format(filename))
 	create_dir(output_path)
 	print(filename)
-	process = Popen(['./bin/cosp_ls', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
+	process = Popen(['./bin/cosp_ls.exe', '-i', input_path, '-o', output_path], stdout=PIPE, universal_newlines=True)
 
-	timer = Timer(10, process.kill)
+	timer = Timer(300, process.kill)
 	try:
 		timer.start()
 		for line in iter(process.stdout.readline, ''):

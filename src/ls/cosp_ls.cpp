@@ -1,7 +1,7 @@
 /*
  *  Problem : cosp_tabu_search.cpp
- *  Description : 
- *  Created by ngocjr7 on [2020-05-24 10:41]	
+ *  Description :
+ *  Created by ngocjr7 on [2020-05-24 10:41]
 */
 #include "../model/utils.h"
 #include "../model/cosp_instance.h"
@@ -10,16 +10,16 @@ using namespace std;
 
 namespace local_search {
 
-struct Idx 
+struct Idx
 {
 	int i, j, k;
 
 	Idx(): i(0), j(0), k(0) {}
 
-	Idx(int _i, int _j, int _k): 
+	Idx(int _i, int _j, int _k):
 		i(_i), j(_j), k(_k) {}
 
-	Idx(const Idx & other) 
+	Idx(const Idx & other)
 	{
 		i = other.i, j = other.j, k = other.k;
 	}
@@ -35,13 +35,13 @@ struct Idx
 	}
 };
 
-struct IdxHasher 
+struct IdxHasher
 {
 	size_t BASE = 31;
 	size_t operator() (const Idx & a) const
 	{
 		size_t ret = 17;
-		ret = ret * BASE + hash<int>()(a.i); 
+		ret = ret * BASE + hash<int>()(a.i);
 		ret = ret * BASE + hash<int>()(a.j);
 		ret = ret * BASE + hash<int>()(a.k);
 		return ret;
@@ -50,7 +50,7 @@ struct IdxHasher
 
 typedef pair<Idx, int> Assignment;
 
-ostream & operator<<(ostream & out, Assignment a) 
+ostream & operator<<(ostream & out, Assignment a)
 {
 	out << a.first << " += " << a.second;
 	return out;
@@ -58,20 +58,20 @@ ostream & operator<<(ostream & out, Assignment a)
 
 typedef vector<Assignment> Move;
 
-ostream & operator<<(ostream & out, Move a) 
+ostream & operator<<(ostream & out, Move a)
 {
-	for (auto e : a) 
+	for (auto e : a)
 		out << e << endl;
 	return out;
 }
 
 
-bool compare_assignment(const Assignment & a, const Assignment & b) 
+bool compare_assignment(const Assignment & a, const Assignment & b)
 {
 	return a.second < b.second;
 }
 
-ostream & operator<<(ostream & out, vector<vector<int>> a) 
+ostream & operator<<(ostream & out, vector<vector<int>> a)
 {
 	for (int i = 0; i < a.size(); i++) {
 		for (int j = 0; j < a[i].size(); j++)
@@ -81,9 +81,9 @@ ostream & operator<<(ostream & out, vector<vector<int>> a)
 	return out;
 }
 
-ostream & operator<<(ostream & out, vector<vector<vector<int>>> a) 
+ostream & operator<<(ostream & out, vector<vector<vector<int>>> a)
 {
-	for (int i = 0; i < a.size(); i++) 
+	for (int i = 0; i < a.size(); i++)
 		for (int j = 0; j < a[i].size(); j++) {
 			for (int k = 0; k < a[i][j].size(); k++)
 				out << a[i][j][k] << " ";
@@ -103,7 +103,7 @@ public:
 	long long max_slack;
 	long long total_cost;
 
-	COSPSolution(COSPInstance& _prob): prob(_prob), n(_prob.n), m(_prob.m), p(_prob.p) 
+	COSPSolution(COSPInstance& _prob): prob(_prob), n(_prob.n), m(_prob.m), p(_prob.p)
 	{
 		max_slack = prob.obj1;
 		total_cost = -1;
@@ -129,7 +129,7 @@ public:
 			for (int j = 0; j < p; j++)
 				remain[i][j] = prob.s[i][j];
 		}
-		
+
 		generate_greedy_solution();
 	}
 
@@ -137,23 +137,23 @@ public:
 		return i*p*n + j*n + k;
 	}
 
-	void generate_greedy_solution() 
+	void generate_greedy_solution()
 	{
 		vector<Assignment> flatten_c;
 		flatten_c.resize(n*m*p);
 
 		for (int i = 0; i < m; i++)
 			for (int j = 0; j < p; j++)
-				for (int k = 0; k < n; k++) 
+				for (int k = 0; k < n; k++)
 				{
 					flatten_c[id(i,j,k)].first.i = i;
 					flatten_c[id(i,j,k)].first.j = j;
 					flatten_c[id(i,j,k)].first.k = k;
 					flatten_c[id(i,j,k)].second = prob.c[i][j][k];
 				}
-        
+
 		sort(flatten_c.begin(),flatten_c.end(), compare_assignment);
-		for (auto e: flatten_c) 
+		for (auto e: flatten_c)
 		{
 			int i(e.first.i), j(e.first.j), k(e.first.k);
 			auto asg = min(tad[k][j], remain[i][j]);
@@ -168,19 +168,19 @@ public:
 		total_cost = get_cost();
 	}
 
-	void print(ostream& os = cout) 
+	void print(ostream& os = cout)
 	{
 		os << max_slack << " " << total_cost << endl;
 		os << load;
 	}
 
 	long long get_cost() {
-		if (total_cost != -1) 
+		if (total_cost != -1)
 			return total_cost;
 		total_cost = 0;
 		for (int i = 0; i < m; i++)
 			for (int j = 0; j < p; j++)
-				for (int k = 0; k < n; k++) 
+				for (int k = 0; k < n; k++)
 					total_cost += prob.c[i][j][k] * load[i][j][k];
 		return total_cost;
 	}
@@ -204,10 +204,10 @@ void exchange(COSPSolution & sol, Move m)
 	}
 }
 
-bool explore_neighbors(COSPSolution& sol) 
+bool explore_neighbors(COSPSolution& sol)
 {
 	bool moved = false;
-	for (auto it = sol.sparse_load.begin(); it != sol.sparse_load.end(); ++it) 
+	for (auto it = sol.sparse_load.begin(); it != sol.sparse_load.end(); ++it)
 	{
 		auto cur_i(it->first.i), cur_j(it->first.j), cur_k(it->first.k), cur_value(it->second);
 
@@ -216,10 +216,10 @@ bool explore_neighbors(COSPSolution& sol)
 
 		for (int i = 0; i < sol.m; i++)
 			for (int j = 0; j < sol.p; j++)
-				for (int k = 0; k < sol.n; k++) 
+				for (int k = 0; k < sol.n; k++)
 				{
 					if ( cur_i == i && cur_j == j && cur_k == k ) continue;
-					if ( k == cur_k ) 
+					if ( k == cur_k )
 					{
 						auto max_exchange = (numeric_limits<int>::max)();
 						max_exchange = min(max_exchange, sol.demand[k][j]);
@@ -228,7 +228,7 @@ bool explore_neighbors(COSPSolution& sol)
 
 						auto gain = max_exchange * (sol.prob.c[cur_i][cur_j][cur_k] - sol.prob.c[i][j][k]);
 
-						if ( max_gain < gain && max_exchange ) 
+						if ( max_gain < gain && max_exchange )
 						{
 							max_gain = gain;
 							candidates.clear();
@@ -246,26 +246,26 @@ bool explore_neighbors(COSPSolution& sol)
 							move.push_back(make_pair(Idx(i, j, -1), -max_exchange));
 							candidates.push_back(move);
 						}
-					} 
-					else if ( sol.remain[i][j] == 0 ) 
+					}
+					else if ( sol.remain[i][j] == 0 )
 					{
 						for (int ii = 0; ii < sol.m; ii++)
-							for (int jj = 0; jj < sol.p; jj++) 
+							for (int jj = 0; jj < sol.p; jj++)
 							{
 								auto max_exchange = (numeric_limits<int>::max)();
 								max_exchange = min(max_exchange, cur_value);
 								max_exchange = min(max_exchange, sol.demand[cur_k][j]);
 								max_exchange = min(max_exchange, sol.load[i][j][k]);
 
-								auto eviction = min(sol.demand[k][jj], 
+								auto eviction = min(sol.demand[k][jj],
 									sol.remain[ii][jj] + (cur_i==ii&&cur_j==jj) * cur_value);
 
 								max_exchange = min(max_exchange, eviction);
 
-								auto gain = max_exchange * (sol.prob.c[cur_i][cur_j][cur_k] 
+								auto gain = max_exchange * (sol.prob.c[cur_i][cur_j][cur_k]
 									+ sol.prob.c[i][j][k] - sol.prob.c[i][j][cur_k] - sol.prob.c[ii][jj][k]);
 
-								if ( max_gain < gain && max_exchange ) 
+								if ( max_gain < gain && max_exchange )
 								{
 									max_gain = gain;
 									candidates.clear();
@@ -301,7 +301,7 @@ bool explore_neighbors(COSPSolution& sol)
 	return moved;
 }
 
-string run(COSPInstance& prob) 
+string run(COSPInstance& prob)
 {
 	stringstream ret;
 
@@ -309,33 +309,31 @@ string run(COSPInstance& prob)
 
 	COSPSolution sol(prob);
 	// sol.print(cout);
+	if (OUTPUT_FILE != "") {
+		ofstream fout(OUTPUT_FILE);
+		sol.print(fout);
+		fout.close();
+	}
 
 	while ( iter++ < max_iter ) {
 		bool moved = explore_neighbors(sol);
 		if (!moved) {
-			ret << "Reach Local Optimum" << endl;
+			cout << "Reach Local Optimum" << endl;
 			break;
 		}
 
-		cout << "Iteration " << iter << " : total_cost = "  << sol.total_cost << endl;  
+		cout << "Iteration " << iter << " : total_cost = "  << sol.total_cost << endl;
 	}
 
 	sol.print(ret);
 
 	return ret.str();
-}	
 }
-   
-std::function<int()> generator = []{
-  int i = 0;
-  return [=]() mutable {
-    return i < 10 ? i++ : -1; 
-  };
-}();
+}
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
-	auto start = high_resolution_clock::now(); 
+	auto start = high_resolution_clock::now();
 
 	int seed = 7;
 	srand(seed);
@@ -346,17 +344,17 @@ int main(int argc, char* argv[])
 		cout << INPUT_FILE << endl;
 		prob.parse_from_stream(inp);
 	} else {
-		cout << "No file passing, read from stdin\n"; 
+		cout << "No file passing, read from stdin\n";
 		prob.parse_from_stream(cin);
 	}
 
 	string result = local_search::run(prob);
 	cout << result;
 
-	auto stop = high_resolution_clock::now(); 
+	auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
 
-    stringstream stat;	
+    stringstream stat;
     stat << "\truntime: \t\t" << format_duration(duration) << " (" << float(duration.count())/1000 << "ms)" << endl;
 
 	if (OUTPUT_FILE != "") {

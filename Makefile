@@ -16,7 +16,7 @@ GREEDY = ./bin/cosp_greedy
 
 .PHONY: clean all
 
-all: bin cp mip ls greedy
+all: bin mip ls greedy
 
 cp: $(CP)
 

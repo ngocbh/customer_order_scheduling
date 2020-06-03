@@ -6,7 +6,7 @@ import numpy as np
 
 ########################### INPUT ###############################
 with open('ao_n_2_p_2_m_3.txt') as f:
-	lines = f.readlines()
+	lines = f.read().split('\n')
 
 [N, P, M] = [int(inp) for inp in lines[0].split()]
 # print(M, P, N)
